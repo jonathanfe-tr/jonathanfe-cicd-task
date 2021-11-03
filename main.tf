@@ -48,6 +48,11 @@ variable "sub" {
   
 }
 
+variable "script" {
+  type = string 
+  
+}
+
 
 
 # #############################################################################
@@ -229,21 +234,38 @@ variable "sub" {
       resource_group_name = azurerm_resource_group.jonathanfeTF.name
     }
  
-    resource "azurerm_virtual_machine_extension" "vm-extension" {
+#    resource "azurerm_virtual_machine_extension" "vm-extension" {
 #      count = "${terraform.workspace == "production" ? 5 : 1}"
 #   #   count                = 3
-      name                 = "jonathanfe"
-      virtual_machine_id   = azurerm_virtual_machine.jonathanfeTF[count.index].id
-      publisher            = "Microsoft.Azure.Extensions"
-      type                 = "CustomScript"
-      type_handler_version = "2.1"
-      settings = <<SETTINGS
-      {
- "commandToExecute": "mkdir /home/testadmin/jenkins-data"
-                     "docker run --name jenkins-docker --rm --detach   --privileged --network jenkins --network-alias docker   --env DOCKER_TLS_CERTDIR=/certs   --volume jenkins-docker-certs:/certs/client   --volume /home/testadmin/jenkins-data:/var/jenkins_home   --publish 2376:2376  --publish 8080:8080 jenkins/jenkins:lts"
-      }
-    SETTINGS
+#       name                 = "jonathanfe"
+#       virtual_machine_id   = azurerm_virtual_machine.jonathanfeTF[count.index].id
+#       publisher            = "Microsoft.Azure.Extensions"
+#       type                 = "CustomScript"
+#       type_handler_version = "2.1"
+#       settings = <<SETTINGS
+#       {
+#  "commandToExecute": "mkdir /home/testadmin/jenkins-data"
+#                      "docker run --name jenkins-docker --rm --detach   --privileged --network jenkins --network-alias docker   --env DOCKER_TLS_CERTDIR=/certs   --volume jenkins-docker-certs:/certs/client   --volume /home/testadmin/jenkins-data:/var/jenkins_home   --publish 2376:2376  --publish 8080:8080 jenkins/jenkins:lts"
+#       }
+#     SETTINGS
+#     }
+
+    resource "azurerm_virtual_machine_extension" "vm-extension" {
+    resource_group_name     = azurerm_resource_group.jonathanfeTF.name
+    location                = var.location
+    name                    = "vmext"
+
+    virtual_machine_name = azurerm_virtual_machine.jonathanfeTF[count.index].id
+    publisher            = "Microsoft.Azure.Extensions"
+    type                 = "CustomScript"
+    type_handler_version = "2.0"
+
+    protected_settings = <<PROT
+    {
+        "script": "${base64encode(file(var.script))}"
     }
+    PROT
+}
  resource "azurerm_network_security_group" "nsg" {
    name                = "firewall"
    location            = azurerm_resource_group.jonathanfeTF.location
