@@ -1,15 +1,4 @@
 
-#################################################################
-# Commands #####################################################
-#
-# terraform apply -var "environment=dev"
-#
-# terraform apply -var "environment=production"
-#
-#
-#
-#
-#
 #############################################################################
 # TERRAFORM CONFIG
 #############################################################################
@@ -28,11 +17,6 @@ terraform {
         key                  = "terraform.tfstate"
     }
 }
-
-
-
-
-
 
 
 
@@ -64,9 +48,6 @@ variable "sub" {
   
 }
 
-# #variable "counter" {
-# #  type = string  
-# #}
 
 
 # #############################################################################
@@ -94,7 +75,6 @@ variable "sub" {
 
  resource "azurerm_virtual_network" "jonathanfeTF" {
    name                = "jonathanfe-terraform-network-${terraform.workspace}"
- #  address_space       = ["30.0.0.0/16"]
    address_space       = [var.vnet] 
    location            = azurerm_resource_group.jonathanfeTF.location
    resource_group_name = azurerm_resource_group.jonathanfeTF.name
@@ -104,15 +84,11 @@ variable "sub" {
    name                 = "database"
    resource_group_name  = azurerm_resource_group.jonathanfeTF.name
    virtual_network_name = azurerm_virtual_network.jonathanfeTF.name
-  # address_prefixes     = ["30.0.1.0/24"]
   address_prefixes     = [var.sub]
  }
 
  resource "azurerm_network_interface" "jonathanfeTF" {
    count = "${terraform.workspace == "production" ? 2 : 1}"
-#   #  count = var.environment == "production" ? 3 : 1 
-
-#   count               = 3
    name                = "jonathanfe-terraform-nic${count.index}-${terraform.workspace}"
    location            = azurerm_resource_group.jonathanfeTF.location
    resource_group_name = azurerm_resource_group.jonathanfeTF.name
@@ -126,13 +102,10 @@ variable "sub" {
 
  resource "azurerm_virtual_machine" "jonathanfeTF" {
    count = "${terraform.workspace == "production" ? 2 : 1}"
-#   #  count               =  var.environment == "production" ? 3 : 1 
-#   count               = 3
    name                = "jonathanfe-terraform-machine${count.index}-${terraform.workspace}"
    resource_group_name = azurerm_resource_group.jonathanfeTF.name
    location            = azurerm_resource_group.jonathanfeTF.location
    vm_size             = "Standard_DS1_v2"
-   #  size                = "Standard_F2"
    availability_set_id = azurerm_availability_set.vm-availability-set.id 
    network_interface_ids = [
      azurerm_network_interface.jonathanfeTF[count.index].id,
@@ -256,33 +229,34 @@ variable "sub" {
       resource_group_name = azurerm_resource_group.jonathanfeTF.name
     }
  
-#    resource "azurerm_virtual_machine_extension" "vm-extension" {
+    resource "azurerm_virtual_machine_extension" "vm-extension" {
 #      count = "${terraform.workspace == "production" ? 5 : 1}"
 #   #   count                = 3
-#      name                 = "jonathanfe"
-#      virtual_machine_id   = azurerm_virtual_machine.jonathanfeTF[count.index].id
-#      publisher            = "Microsoft.Azure.Extensions"
-#      type                 = "CustomScript"
-#      type_handler_version = "2.1"
-#      settings = <<SETTINGS
-#      {
-# "commandToExecute": "bash script.sh"
-#      }
-#    SETTINGS
-#    }
+      name                 = "jonathanfe"
+      virtual_machine_id   = azurerm_virtual_machine.jonathanfeTF[count.index].id
+      publisher            = "Microsoft.Azure.Extensions"
+      type                 = "CustomScript"
+      type_handler_version = "2.1"
+      settings = <<SETTINGS
+      {
+ "commandToExecute": "mkdir /home/testadmin/jenkins-data"
+                     "docker run --name jenkins-docker --rm --detach   --privileged --network jenkins --network-alias docker   --env DOCKER_TLS_CERTDIR=/certs   --volume jenkins-docker-certs:/certs/client   --volume /home/testadmin/jenkins-data:/var/jenkins_home   --publish 2376:2376  --publish 8080:8080 jenkins/jenkins:lts"
+      }
+    SETTINGS
+    }
  resource "azurerm_network_security_group" "nsg" {
    name                = "firewall"
    location            = azurerm_resource_group.jonathanfeTF.location
    resource_group_name = azurerm_resource_group.jonathanfeTF.name
     security_rule {
-     name                       = "port80"
+     name                       = "jenkins"
      priority                   = 100
      direction                  = "Inbound"
      access                     = "Allow"
      protocol                   = "Tcp"
      source_port_range          = "*"
-     destination_port_range     = "80"
-     source_address_prefix      = "34.99.159.243/32"
+     destination_port_range     = "8080"
+     source_address_prefix      = "140.82.112.0/20,34.99.159.243/32"
      destination_address_prefix = "*"
    }
  }
