@@ -197,7 +197,7 @@ variable "sub" {
      allow_gateway_transit        = false
    }
    resource "azurerm_virtual_network_peering" "jonathanfe-peering" {
-     name                         = "peering-${terraform.workspace}"
+     name                         = "peering-jf-${terraform.workspace}"
      resource_group_name          = data.azurerm_resource_group.bastion-rg.name
      virtual_network_name         = data.azurerm_virtual_network.jonathanfe-bastionTF.name
      remote_virtual_network_id    = azurerm_virtual_network.jonathanfeTF.id
