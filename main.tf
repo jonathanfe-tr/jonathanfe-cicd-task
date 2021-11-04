@@ -225,7 +225,7 @@ data "azurerm_resource_group" "storage-account" {
      loadbalancer_id                = azurerm_lb.LBRG.id
      name                           = "LBRule"
      protocol                       = "Tcp"
-     frontend_port                  = 80
+     frontend_port                  = 8080
      backend_port                   = 8080
      backend_address_pool_id        = azurerm_lb_backend_address_pool.backend-pool.id 
      frontend_ip_configuration_name = "PublicIPAddress"
