@@ -47,5 +47,6 @@ jobs:
 
 
     - name: Terraform Apply
+      if: github.event.pull_request.merged == 'true'
       id: apply
-      run: terraform apply --auto-approve --var-file ${{env.envir}}.tfvars 
+      run: terraform apply --auto-approve --var-file ${{env.envir}}.tfvars
