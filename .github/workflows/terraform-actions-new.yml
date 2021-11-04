@@ -48,4 +48,4 @@ jobs:
 
     - name: Terraform Apply
       id: apply
-      run: terraform apply --auto-approve --var-file ${{env.envir}}.tfvars -out=plan.log 
+      run: terraform apply --auto-approve --var-file ${{env.envir}}.tfvars 
