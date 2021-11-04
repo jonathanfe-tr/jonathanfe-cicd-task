@@ -9,9 +9,9 @@ on:
     branches:
     - dev
   pull_request:
-    branches:
-    - main
-
+    types: [closed]
+    
+    
 jobs:
   terraform:
     name: 'Terraform'
