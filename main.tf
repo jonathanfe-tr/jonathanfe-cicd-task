@@ -75,6 +75,9 @@ variable "sub" {
 
  }
 
+data "azurerm_resource_group" "storage-account" {
+  name = "jonathanfeTF2"
+}
 
 
 
