@@ -11,9 +11,9 @@ terraform {
     }
   }
       backend "azurerm" {
-        resource_group_name  = "jonathanfeTF"
-        storage_account_name = "jonathanfe"
-        container_name       = "tfstate"
+        resource_group_name  = "jonathanfeTF2"
+        storage_account_name = "jonathanfe2"
+        container_name       = "tfstate2"
         key                  = "terraform.tfstate"
     }
 }
@@ -48,10 +48,10 @@ variable "sub" {
   
 }
 
-variable "script" {
-  type = string 
+# variable "script" {
+#   type = string 
   
-}
+# }
 
 
 
@@ -234,38 +234,24 @@ variable "script" {
       resource_group_name = azurerm_resource_group.jonathanfeTF.name
     }
  
-#    resource "azurerm_virtual_machine_extension" "vm-extension" {
-#      count = "${terraform.workspace == "production" ? 5 : 1}"
-#   #   count                = 3
-#       name                 = "jonathanfe"
-#       virtual_machine_id   = azurerm_virtual_machine.jonathanfeTF[count.index].id
-#       publisher            = "Microsoft.Azure.Extensions"
-#       type                 = "CustomScript"
-#       type_handler_version = "2.1"
-#       settings = <<SETTINGS
-#       {
-#  "commandToExecute": "mkdir /home/testadmin/jenkins-data"
-#                      "docker run --name jenkins-docker --rm --detach   --privileged --network jenkins --network-alias docker   --env DOCKER_TLS_CERTDIR=/certs   --volume jenkins-docker-certs:/certs/client   --volume /home/testadmin/jenkins-data:/var/jenkins_home   --publish 2376:2376  --publish 8080:8080 jenkins/jenkins:lts"
-#       }
-#     SETTINGS
-#     }
+   resource "azurerm_virtual_machine_extension" "vm-extension" {
+     count = "${terraform.workspace == "production" ? 5 : 1}"
+  #   count                = 3
+      name                 = "jonathanfe"
+      virtual_machine_id   = azurerm_virtual_machine.jonathanfeTF[count.index].id
+      publisher            = "Microsoft.Azure.Extensions"
+      type                 = "CustomScript"
+      type_handler_version = "2.1"
+      settings = <<SETTINGS
+      {
+ "commandToExecute": "sudo apt-get install openjdk-8-jre-headless -y && wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add - && sudo sh -c 'echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list' && sudo apt update -y && sudo apt install jenkins -y"
 
-    resource "azurerm_virtual_machine_extension" "vm-extension" {
-    resource_group_name     = azurerm_resource_group.jonathanfeTF.name
-    location                = var.location
-    name                    = "vmext"
-
-    virtual_machine_name = azurerm_virtual_machine.jonathanfeTF[count.index].id
-    publisher            = "Microsoft.Azure.Extensions"
-    type                 = "CustomScript"
-    type_handler_version = "2.0"
-
-    protected_settings = <<PROT
-    {
-        "script": "${base64encode(file(var.script))}"
+                     
+      }
+    SETTINGS
     }
-    PROT
-}
+
+
  resource "azurerm_network_security_group" "nsg" {
    name                = "firewall"
    location            = azurerm_resource_group.jonathanfeTF.location
@@ -278,7 +264,7 @@ variable "script" {
      protocol                   = "Tcp"
      source_port_range          = "*"
      destination_port_range     = "8080"
-     source_address_prefix      = "140.82.112.0/20,34.99.159.243/32"
+     source_address_prefix      = "*"
      destination_address_prefix = "*"
    }
  }
