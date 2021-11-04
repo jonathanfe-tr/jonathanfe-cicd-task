@@ -20,7 +20,6 @@ jobs:
       AZURE_TENANTID: ${{ secrets.AZURE_TENANTID }}
       AZURE_SUBSCRIPTIONID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
       envir: 'dev'
-    environment: dev
 
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
     defaults:
