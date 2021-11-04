@@ -9,6 +9,8 @@ on:
     branches:
     - dev
   pull_request:
+    branches:
+    - main
 
 jobs:
   terraform:
