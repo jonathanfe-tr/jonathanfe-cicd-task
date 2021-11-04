@@ -1,16 +1,20 @@
 
 
 name: 'terraform-actions'
-# test 1 12:20
-
+# test 1 11:17
 
 on:
-  push:
-    branches:
-    - dev
   pull_request:
+    branches:
+      - master
+    types: [closed]
 
 jobs:
+  <job id>:
+    if: github.event.pull_request.merged == true
+
+
+
   terraform:
     name: 'Terraform'
     runs-on: ubuntu-latest
@@ -44,3 +48,9 @@ jobs:
     - name: Terraform Plan
       id: plan
       run: terraform plan --var-file ${{env.envir}}.tfvars -out=plan.log
+
+
+    - name: Terraform Apply
+      if: github.event.pull_request.merged == 'true'
+      id: apply
+      run: terraform apply --auto-approve --var-file ${{env.envir}}.tfvars 
