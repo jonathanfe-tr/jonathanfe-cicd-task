@@ -15,8 +15,7 @@ jobs:
     name: 'Terraform'
     runs-on: ubuntu-latest
     env:
-      ARM_CLIENT_ID: ${{ secrets.
-       }}
+      ARM_CLIENT_ID: ${{ secrets.AZURE_AD_CLIENT_ID }}
       ARM_CLIENT_SECRET: ${{ secrets.AZURE_AD_CLIENT_SECRET }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANTID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTIONID }}
