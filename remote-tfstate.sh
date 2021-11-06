@@ -1,9 +1,9 @@
 #!/bin/bash
 set -x
 
-RESOURCE_GROUP_NAME=jonathanfeTF2
-STORAGE_ACCOUNT_NAME=jonathanfe2
-CONTAINER_NAME=tfstate2
+RESOURCE_GROUP_NAME=jonathanfeTF
+STORAGE_ACCOUNT_NAME=jonathanfecicd
+CONTAINER_NAME=jonathanfecicd
 
 # Create resource group
 az group create --name $RESOURCE_GROUP_NAME --location eastus
