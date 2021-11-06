@@ -7,7 +7,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 2.0"
+     version = "~> 2.0"
     }
   }
       backend "azurerm" {
@@ -76,9 +76,8 @@ variable "sub" {
  }
 
 data "azurerm_resource_group" "storage-account" {
-  name = "jonathanfeTF2"
+  name = "jonathanfeTF"
 }
-
 
 
  resource "azurerm_virtual_network" "main" {
@@ -105,7 +104,7 @@ data "azurerm_resource_group" "storage-account" {
      name                          = "database"
      subnet_id                     = azurerm_subnet.main.id
      private_ip_address_allocation = "Dynamic"
-     public_ip_address_id = azurerm_public_ip.publicip[count.index].id 
+     public_ip_address_id = azurerm_public_ip.jonathanfe-public-ip[count.index].id 
    }
  }
 
@@ -129,7 +128,7 @@ data "azurerm_resource_group" "storage-account" {
    os_profile_linux_config {
      disable_password_authentication = false
      ssh_keys {
-       key_data = data.azurerm_key_vault_secret.publickey.value
+       key_data = data.azurerm_key_vault_secret.public_key.value
 
 
      #  key_data = file("~/.ssh/id_rsa.pub")
@@ -190,7 +189,8 @@ data "azurerm_resource_group" "storage-account" {
    }
 
 
-    resource "azurerm_public_ip" "publicip" {
+    resource "azurerm_public_ip" "jonathanfe-public-ip" {
+      count = "${terraform.workspace == "production" ? 2 : 3}"
       name                = "PublicIP"
       location            = var.location
       resource_group_name = azurerm_resource_group.main.name
@@ -249,7 +249,7 @@ data "azurerm_resource_group" "storage-account" {
    }
     security_rule {
      name                       = "ssh"
-     priority                   = 10
+     priority                   = 120
      direction                  = "Inbound"
      access                     = "Allow"
      protocol                   = "Tcp"
@@ -274,6 +274,7 @@ data "azurerm_resource_group" "storage-account" {
 ##Managed Identity
 
 resource "azurerm_user_assigned_identity" "managed_identity" {
+  resource_group_name = azurerm_resource_group.main.name
   count = "${terraform.workspace == "production" ? 2 : 3}"
   location            = var.location
   name                  = "jonathanfe-cicd"
@@ -285,12 +286,12 @@ data "azurerm_key_vault" "kv" {
   name                = "jonathanfekeyvault"
   resource_group_name = "jonathanfe-azuretask-rg"
 }
-data "azurerm_key_vault_secret" "publickey" {
+data "azurerm_key_vault_secret" "public_key" {
   name         = "jonathanfe-public-key"
   key_vault_id = data.azurerm_key_vault.kv.id
 }
 
-data "azurerm_key_vault_secret" "privatekey" {
+data "azurerm_key_vault_secret" "private_key" {
   name         = "jonathanfe-key"
   key_vault_id = data.azurerm_key_vault.kv.id
 }
