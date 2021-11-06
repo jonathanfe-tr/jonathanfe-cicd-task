@@ -11,7 +11,7 @@ terraform {
     }
   }
       backend "azurerm" {
-        resource_group_name  = "jonathanfeTF2"
+        resource_group_name  = "main2"
         storage_account_name = "jonathanfe2"
         container_name       = "tfstate2"
         key                  = "terraform.tfstate"
@@ -68,7 +68,7 @@ variable "sub" {
 # #############################################################################
 
 
- resource "azurerm_resource_group" "jonathanfeTF" {
+ resource "azurerm_resource_group" "main" {
 #   name     = "${var.resource_group_name}-${terraform.workspace}"
    name     = "${var.resource_group_name}"
    location = var.location
@@ -81,43 +81,43 @@ data "azurerm_resource_group" "storage-account" {
 
 
 
- resource "azurerm_virtual_network" "jonathanfeTF" {
+ resource "azurerm_virtual_network" "main" {
    name                = "jonathanfe-terraform-network-${terraform.workspace}"
    address_space       = [var.vnet] 
-   location            = azurerm_resource_group.jonathanfeTF.location
-   resource_group_name = azurerm_resource_group.jonathanfeTF.name
+   location            = azurerm_resource_group.main.location
+   resource_group_name = azurerm_resource_group.main.name
  }
 
- resource "azurerm_subnet" "jonathanfeTF" {
+ resource "azurerm_subnet" "main" {
    name                 = "database"
-   resource_group_name  = azurerm_resource_group.jonathanfeTF.name
-   virtual_network_name = azurerm_virtual_network.jonathanfeTF.name
+   resource_group_name  = azurerm_resource_group.main.name
+   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = [var.sub]
  }
 
- resource "azurerm_network_interface" "jonathanfeTF" {
+ resource "azurerm_network_interface" "main" {
    count = "${terraform.workspace == "production" ? 2 : 3}"
    name                = "jonathanfe-terraform-nic${count.index}-${terraform.workspace}"
-   location            = azurerm_resource_group.jonathanfeTF.location
-   resource_group_name = azurerm_resource_group.jonathanfeTF.name
+   location            = azurerm_resource_group.main.location
+   resource_group_name = azurerm_resource_group.main.name
 
    ip_configuration {
      name                          = "database"
-     subnet_id                     = azurerm_subnet.jonathanfeTF.id
+     subnet_id                     = azurerm_subnet.main.id
      private_ip_address_allocation = "Dynamic"
      public_ip_address_id = azurerm_public_ip.publicip[count.index].id 
    }
  }
 
- resource "azurerm_virtual_machine" "jonathanfeTF" {
+ resource "azurerm_virtual_machine" "main" {
    count = "${terraform.workspace == "production" ? 2 : 3}"
    name                = "jonathanfe-terraform-machine${count.index}-${terraform.workspace}"
-   resource_group_name = azurerm_resource_group.jonathanfeTF.name
-   location            = azurerm_resource_group.jonathanfeTF.location
+   resource_group_name = azurerm_resource_group.main.name
+   location            = azurerm_resource_group.main.location
    vm_size             = "Standard_DS1_v2"
    availability_set_id = azurerm_availability_set.vm-availability-set.id 
    network_interface_ids = [
-     azurerm_network_interface.jonathanfeTF[count.index].id,
+     azurerm_network_interface.main[count.index].id,
    ]
 
 
@@ -172,8 +172,8 @@ data "azurerm_resource_group" "storage-account" {
 
    resource "azurerm_virtual_network_peering" "jonathanfe-bastionTF" {
      name                         = "${var.resource_group_name}"
-     resource_group_name          = azurerm_resource_group.jonathanfeTF.name
-     virtual_network_name         = azurerm_virtual_network.jonathanfeTF.name
+     resource_group_name          = azurerm_resource_group.main.name
+     virtual_network_name         = azurerm_virtual_network.main.name
      remote_virtual_network_id    = data.azurerm_virtual_network.jonathanfe-bastionTF.id
     allow_virtual_network_access = true
      allow_forwarded_traffic      = true
@@ -183,7 +183,7 @@ data "azurerm_resource_group" "storage-account" {
      name                         = "peering-jf-${terraform.workspace}"
      resource_group_name          = data.azurerm_resource_group.bastion-rg.name
      virtual_network_name         = data.azurerm_virtual_network.jonathanfe-bastionTF.name
-     remote_virtual_network_id    = azurerm_virtual_network.jonathanfeTF.id
+     remote_virtual_network_id    = azurerm_virtual_network.main.id
      allow_virtual_network_access = true
      allow_forwarded_traffic      = true
      allow_gateway_transit        = false
@@ -193,21 +193,21 @@ data "azurerm_resource_group" "storage-account" {
     resource "azurerm_public_ip" "publicip" {
       name                = "PublicIP"
       location            = var.location
-      resource_group_name = azurerm_resource_group.jonathanfeTF.name
+      resource_group_name = azurerm_resource_group.main.name
       allocation_method   = "Dynamic"
     }
 
     resource "azurerm_availability_set" "vm-availability-set" {
       name                = "example-aset"
-      location            = azurerm_resource_group.jonathanfeTF.location
-      resource_group_name = azurerm_resource_group.jonathanfeTF.name
+      location            = azurerm_resource_group.main.location
+      resource_group_name = azurerm_resource_group.main.name
     }
  
    resource "azurerm_virtual_machine_extension" "vm-extension" {
      count = "${terraform.workspace == "production" ? 2 : 3}"
   #   count                = 3
       name                 = "jonathanfe"
-      virtual_machine_id   = azurerm_virtual_machine.jonathanfeTF[count.index].id
+      virtual_machine_id   = azurerm_virtual_machine.main[count.index].id
       publisher            = "Microsoft.Azure.Extensions"
       type                 = "CustomScript"
       type_handler_version = "2.1"
@@ -223,8 +223,8 @@ data "azurerm_resource_group" "storage-account" {
 
  resource "azurerm_network_security_group" "nsg" {
    name                = "firewall"
-   location            = azurerm_resource_group.jonathanfeTF.location
-   resource_group_name = azurerm_resource_group.jonathanfeTF.name
+   location            = azurerm_resource_group.main.location
+   resource_group_name = azurerm_resource_group.main.name
     security_rule {
      name                       = "jenkins"
      priority                   = 100
@@ -262,7 +262,7 @@ data "azurerm_resource_group" "storage-account" {
  resource "azurerm_network_interface_security_group_association" "nsg" {
    count = "${terraform.workspace == "production" ? 2 : 3}"
    # count = 3 
-   network_interface_id      = azurerm_network_interface.jonathanfeTF[count.index].id 
+   network_interface_id      = azurerm_network_interface.main[count.index].id 
    network_security_group_id = azurerm_network_security_group.nsg.id 
  }
 
