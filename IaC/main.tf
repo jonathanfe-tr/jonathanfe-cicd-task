@@ -295,3 +295,16 @@ data "azurerm_key_vault_secret" "private_key" {
   name         = "jonathanfe-key"
   key_vault_id = data.azurerm_key_vault.kv.id
 }
+
+
+# # Set access policies to the vm
+# resource "azurerm_key_vault_access_policy" "accessPolicies" {
+#   count        = var.numberOfInstances
+#   key_vault_id = data.azurerm_key_vault.kv.id
+#   tenant_id    = "812aea3a-56f9-4dcb-81f3-83e61357076e"
+#   object_id    = azurerm_virtual_machine.main[count.index].identity.0.principal_id
+
+#   secret_permissions = [
+#     "Get",
+#   ]
+# }
