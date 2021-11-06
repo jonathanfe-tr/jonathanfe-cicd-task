@@ -191,7 +191,7 @@ data "azurerm_resource_group" "storage-account" {
 
     resource "azurerm_public_ip" "jonathanfe-public-ip" {
       count = "${terraform.workspace == "production" ? 2 : 3}"
-      name                = "PublicIP"
+      name                = "puip-${count.index}"
       location            = var.location
       resource_group_name = azurerm_resource_group.main.name
       allocation_method   = "Dynamic"
