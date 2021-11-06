@@ -129,7 +129,7 @@ data "azurerm_resource_group" "storage-account" {
    os_profile_linux_config {
      disable_password_authentication = false
      ssh_keys {
-       key_data = data.azurerm_key_vault_secret.main.value
+       key_data = data.azurerm_key_vault_secret.publickey.value
 
 
      #  key_data = file("~/.ssh/id_rsa.pub")
@@ -285,12 +285,12 @@ data "azurerm_key_vault" "kv" {
   name                = "jonathanfekeyvault"
   resource_group_name = "jonathanfe-azuretask-rg"
 }
-data "azurerm_key_vault_secret" "main" {
+data "azurerm_key_vault_secret" "publickey" {
   name         = "jonathanfe-public-key"
   key_vault_id = data.azurerm_key_vault.kv.id
 }
 
-data "azurerm_key_vault_secret" "main" {
+data "azurerm_key_vault_secret" "privatekey" {
   name         = "jonathanfe-key"
   key_vault_id = data.azurerm_key_vault.kv.id
 }
