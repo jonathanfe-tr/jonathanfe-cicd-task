@@ -100,7 +100,7 @@ data "azurerm_resource_group" "storage-account" {
 
  resource "azurerm_network_interface" "main" {
   # count = "${terraform.workspace == "production" ? 2 : 3}"
-   count = var.numofvms
+   count = 1
    name                = "jonathanfe-terraform-nic${count.index}-${terraform.workspace}"
    location            = azurerm_resource_group.main.location
    resource_group_name = azurerm_resource_group.main.name
@@ -115,7 +115,7 @@ data "azurerm_resource_group" "storage-account" {
 
  resource "azurerm_virtual_machine" "main" {
  #  count = "${terraform.workspace == "production" ? 2 : 3}"
-   count = var.numofvms
+   count = 1
    name                = "jonathanfe-terraform-machine${count.index}-${terraform.workspace}"
    resource_group_name = azurerm_resource_group.main.name
    location            = azurerm_resource_group.main.location
@@ -197,7 +197,7 @@ data "azurerm_resource_group" "storage-account" {
 
     resource "azurerm_public_ip" "jonathanfe-public-ip" {
    #   count = "${terraform.workspace == "production" ? 2 : 3}"
-      count = var.numofvms
+      count = 1
       name                = "puip-${count.index}"
       location            = var.location
       resource_group_name = azurerm_resource_group.main.name
@@ -211,10 +211,10 @@ data "azurerm_resource_group" "storage-account" {
     }
  
    resource "azurerm_virtual_machine_extension" "vm-extension-jenkins" {
-     count = var.numofvms
+     count = 1
   #   count                = 3
       name                 = "jonathanfe"
-      virtual_machine_id   = azurerm_virtual_machine.main[count.index[0]].id
+      virtual_machine_id   = azurerm_virtual_machine.main[count.index].id
       publisher            = "Microsoft.Azure.Extensions"
       type                 = "CustomScript"
       type_handler_version = "2.1"
@@ -268,7 +268,7 @@ data "azurerm_resource_group" "storage-account" {
  }
  resource "azurerm_network_interface_security_group_association" "nsg" {
   # count = "${terraform.workspace == "production" ? 2 : 3}"
-   count = var.numofvms 
+   count = 1
    network_interface_id      = azurerm_network_interface.main[count.index].id 
    network_security_group_id = azurerm_network_security_group.nsg.id 
  }
@@ -306,7 +306,7 @@ data "azurerm_key_vault_secret" "private_key" {
 
 # Set access policies to the vm
 resource "azurerm_key_vault_access_policy" "accessPolicies" {
-count = var.numofvms
+count = 1
 #  count        = "${terraform.workspace == "production" ? 2 : 3}"
   key_vault_id = data.azurerm_key_vault.kv.id
   tenant_id    = "812aea3a-56f9-4dcb-81f3-83e61357076e"
