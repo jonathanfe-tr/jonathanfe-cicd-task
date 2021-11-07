@@ -207,7 +207,7 @@ data "azurerm_resource_group" "storage-account" {
      count = "${terraform.workspace == "production" ? 2 : 3}"
   #   count                = 3
       name                 = "jonathanfe"
-      virtual_machine_id   = azurerm_virtual_machine.main[count.index].0.id
+      virtual_machine_id   = azurerm_virtual_machine.main[count.index].id
       publisher            = "Microsoft.Azure.Extensions"
       type                 = "CustomScript"
       type_handler_version = "2.1"
