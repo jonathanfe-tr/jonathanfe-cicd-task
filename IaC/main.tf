@@ -204,10 +204,10 @@ data "azurerm_resource_group" "storage-account" {
     }
  
    resource "azurerm_virtual_machine_extension" "vm-extension-jenkins" {
-     count = 1
+     count = "${terraform.workspace == "production" ? 2 : 3}"
   #   count                = 3
       name                 = "jonathanfe"
-      virtual_machine_id   = azurerm_virtual_machine.main[count.index][0].id
+      virtual_machine_id   = azurerm_virtual_machine.main[count.index].0.id
       publisher            = "Microsoft.Azure.Extensions"
       type                 = "CustomScript"
       type_handler_version = "2.1"
