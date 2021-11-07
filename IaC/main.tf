@@ -296,14 +296,14 @@ data "azurerm_key_vault_secret" "private_key" {
 }
 
 
-# Set access policies to the vm
-resource "azurerm_key_vault_access_policy" "accessPolicies" {
+# # Set access policies to the vm
+# resource "azurerm_key_vault_access_policy" "accessPolicies" {
 
-  key_vault_id = data.azurerm_key_vault.kv.id
-  tenant_id    = "812aea3a-56f9-4dcb-81f3-83e61357076e"
-  object_id    = azurerm_virtual_machine.main.identity.0.principal_id
+#   key_vault_id = data.azurerm_key_vault.kv.id
+#   tenant_id    = "812aea3a-56f9-4dcb-81f3-83e61357076e"
+#   object_id    = azurerm_virtual_machine.main.identity.0.principal_id
 
-  secret_permissions = [
-    "Get",
-  ]
-}
+#   secret_permissions = [
+#     "Get",
+#   ]
+# }
