@@ -48,10 +48,6 @@ variable "sub" {
   
 }
 
-variable "numofvms" {
-  type = number
-  
-}
 # variable "script" {
 #   type = string 
   
@@ -99,7 +95,8 @@ data "azurerm_resource_group" "storage-account" {
  }
 
  resource "azurerm_network_interface" "main" {
-   name                = "jonathanfe-terraform-nic-${terraform.workspace}"
+   count = "${terraform.workspace == "production" ? 2 : 3}"
+   name                = "jonathanfe-terraform-nic${count.index}-${terraform.workspace}"
    location            = azurerm_resource_group.main.location
    resource_group_name = azurerm_resource_group.main.name
 
@@ -107,18 +104,19 @@ data "azurerm_resource_group" "storage-account" {
      name                          = "database"
      subnet_id                     = azurerm_subnet.main.id
      private_ip_address_allocation = "Dynamic"
-     public_ip_address_id = azurerm_public_ip.jonathanfe-public-ip.id 
+     public_ip_address_id = azurerm_public_ip.jonathanfe-public-ip[count.index].id 
    }
  }
 
  resource "azurerm_virtual_machine" "main" {
-   name                = "jonathanfe-terraform-machine-${terraform.workspace}"
+   count = "${terraform.workspace == "production" ? 2 : 3}"
+   name                = "jonathanfe-terraform-machine${count.index}-${terraform.workspace}"
    resource_group_name = azurerm_resource_group.main.name
    location            = azurerm_resource_group.main.location
    vm_size             = "Standard_DS1_v2"
    availability_set_id = azurerm_availability_set.vm-availability-set.id 
    network_interface_ids = [
-     azurerm_network_interface.main.id,
+     azurerm_network_interface.main[count.index].id,
    ]
 
 
@@ -144,7 +142,7 @@ data "azurerm_resource_group" "storage-account" {
 
 
    storage_os_disk {
-     name              = "myosdisk-${terraform.workspace}"
+     name              = "myosdisk${count.index}-${terraform.workspace}"
      caching           = "ReadWrite"
      create_option     = "FromImage"
      managed_disk_type = "Standard_LRS"
@@ -192,7 +190,8 @@ data "azurerm_resource_group" "storage-account" {
 
 
     resource "azurerm_public_ip" "jonathanfe-public-ip" {
-      name                = "puip"
+      count = "${terraform.workspace == "production" ? 2 : 3}"
+      name                = "puip-${count.index}"
       location            = var.location
       resource_group_name = azurerm_resource_group.main.name
       allocation_method   = "Dynamic"
@@ -205,9 +204,10 @@ data "azurerm_resource_group" "storage-account" {
     }
  
    resource "azurerm_virtual_machine_extension" "vm-extension-jenkins" {
-
+     count = 1
+  #   count                = 3
       name                 = "jonathanfe"
-      virtual_machine_id   = azurerm_virtual_machine.main.id
+      virtual_machine_id   = azurerm_virtual_machine.main[count.index[0]].id
       publisher            = "Microsoft.Azure.Extensions"
       type                 = "CustomScript"
       type_handler_version = "2.1"
@@ -233,7 +233,7 @@ data "azurerm_resource_group" "storage-account" {
      protocol                   = "Tcp"
      source_port_range          = "*"
      destination_port_range     = "8080"
-     source_address_prefix      = "34.99.159.243/32"
+     source_address_prefix      = "34.99.76.222/32"
      destination_address_prefix = "*"
    }
       security_rule {
@@ -244,7 +244,7 @@ data "azurerm_resource_group" "storage-account" {
      protocol                   = "Tcp"
      source_port_range          = "*"
      destination_port_range     = "80"
-     source_address_prefix      = "34.99.159.243/32"
+     source_address_prefix      = "34.99.76.222/32"
      destination_address_prefix = "*"
    }
     security_rule {
@@ -255,13 +255,14 @@ data "azurerm_resource_group" "storage-account" {
      protocol                   = "Tcp"
      source_port_range          = "*"
      destination_port_range     = "22"
-     source_address_prefix      = "*"
+     source_address_prefix      = "34.99.76.222/32"
      destination_address_prefix = "*"
    }
  }
  resource "azurerm_network_interface_security_group_association" "nsg" {
-
-   network_interface_id      = azurerm_network_interface.main.id 
+   count = "${terraform.workspace == "production" ? 2 : 3}"
+   # count = 3 
+   network_interface_id      = azurerm_network_interface.main[count.index].id 
    network_security_group_id = azurerm_network_security_group.nsg.id 
  }
 
@@ -298,10 +299,10 @@ data "azurerm_key_vault_secret" "private_key" {
 
 # # Set access policies to the vm
 # resource "azurerm_key_vault_access_policy" "accessPolicies" {
-
+#   count        = var.numberOfInstances
 #   key_vault_id = data.azurerm_key_vault.kv.id
 #   tenant_id    = "812aea3a-56f9-4dcb-81f3-83e61357076e"
-#   object_id    = azurerm_virtual_machine.main.identity.0.principal_id
+#   object_id    = azurerm_virtual_machine.main[count.index].identity.0.principal_id
 
 #   secret_permissions = [
 #     "Get",
