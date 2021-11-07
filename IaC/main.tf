@@ -48,6 +48,10 @@ variable "sub" {
   
 }
 
+variable "numofvms" {
+  type = number
+  
+}
 # variable "script" {
 #   type = string 
   
@@ -95,7 +99,8 @@ data "azurerm_resource_group" "storage-account" {
  }
 
  resource "azurerm_network_interface" "main" {
-   count = "${terraform.workspace == "production" ? 2 : 3}"
+  # count = "${terraform.workspace == "production" ? 2 : 3}"
+   count = var.numofvms
    name                = "jonathanfe-terraform-nic${count.index}-${terraform.workspace}"
    location            = azurerm_resource_group.main.location
    resource_group_name = azurerm_resource_group.main.name
@@ -109,7 +114,8 @@ data "azurerm_resource_group" "storage-account" {
  }
 
  resource "azurerm_virtual_machine" "main" {
-   count = "${terraform.workspace == "production" ? 2 : 3}"
+ #  count = "${terraform.workspace == "production" ? 2 : 3}"
+   count = var.numofvms
    name                = "jonathanfe-terraform-machine${count.index}-${terraform.workspace}"
    resource_group_name = azurerm_resource_group.main.name
    location            = azurerm_resource_group.main.location
@@ -190,7 +196,8 @@ data "azurerm_resource_group" "storage-account" {
 
 
     resource "azurerm_public_ip" "jonathanfe-public-ip" {
-      count = "${terraform.workspace == "production" ? 2 : 3}"
+   #   count = "${terraform.workspace == "production" ? 2 : 3}"
+      count = var.numofvms
       name                = "puip-${count.index}"
       location            = var.location
       resource_group_name = azurerm_resource_group.main.name
@@ -204,7 +211,7 @@ data "azurerm_resource_group" "storage-account" {
     }
  
    resource "azurerm_virtual_machine_extension" "vm-extension-jenkins" {
-     count = 1
+     count = var.numofvms
   #   count                = 3
       name                 = "jonathanfe"
       virtual_machine_id   = azurerm_virtual_machine.main[count.index].id
@@ -260,8 +267,8 @@ data "azurerm_resource_group" "storage-account" {
    }
  }
  resource "azurerm_network_interface_security_group_association" "nsg" {
-   count = "${terraform.workspace == "production" ? 2 : 3}"
-   # count = 3 
+  # count = "${terraform.workspace == "production" ? 2 : 3}"
+   count = var.numofvms 
    network_interface_id      = azurerm_network_interface.main[count.index].id 
    network_security_group_id = azurerm_network_security_group.nsg.id 
  }
@@ -297,14 +304,15 @@ data "azurerm_key_vault_secret" "private_key" {
 }
 
 
-# # Set access policies to the vm
-# resource "azurerm_key_vault_access_policy" "accessPolicies" {
-#   count        = var.numberOfInstances
-#   key_vault_id = data.azurerm_key_vault.kv.id
-#   tenant_id    = "812aea3a-56f9-4dcb-81f3-83e61357076e"
-#   object_id    = azurerm_virtual_machine.main[count.index].identity.0.principal_id
+# Set access policies to the vm
+resource "azurerm_key_vault_access_policy" "accessPolicies" {
+count = var.numofvms
+#  count        = "${terraform.workspace == "production" ? 2 : 3}"
+  key_vault_id = data.azurerm_key_vault.kv.id
+  tenant_id    = "812aea3a-56f9-4dcb-81f3-83e61357076e"
+  object_id    = azurerm_virtual_machine.main[count.index].identity.0.principal_id
 
-#   secret_permissions = [
-#     "Get",
-#   ]
-# }
+  secret_permissions = [
+    "Get",
+  ]
+}
